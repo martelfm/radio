@@ -50,6 +50,7 @@
       margin: 0 auto 18px;
       border: 1px solid var(--border);
       background: rgba(255,255,255,0.04);
+      display: block;
     }
 
     .badge {
@@ -218,7 +219,7 @@
 </head>
 <body>
   <main class="player">
-    <img src="./logo.jpg" alt="Logo Martel FM" class="logo" />
+    <img id="logo" src="/radio/logo.jpg" alt="Logo Martel FM" class="logo" />
 
     <div class="badge">Radio en direct</div>
     <h1>Martel FM</h1>
@@ -273,6 +274,13 @@
     const errorBox = document.getElementById('errorBox');
     const artistEl = document.getElementById('artist');
     const titleEl = document.getElementById('title');
+    const logoEl = document.getElementById('logo');
+
+    logoEl.onerror = function () {
+      if (logoEl.getAttribute('src') !== './logo.jpg') {
+        logoEl.setAttribute('src', './logo.jpg');
+      }
+    };
 
     function setPlayingState(isPlaying) {
       if (isPlaying) {
@@ -356,8 +364,8 @@
 
         const rawTitle =
           current.title ||
-          current['server_name'] ||
-          current['listenurl'] ||
+          current.server_name ||
+          current.listenurl ||
           '';
 
         const parsed = parseTitle(rawTitle);
@@ -365,7 +373,7 @@
         titleEl.textContent = parsed.title;
       } catch (err) {
         artistEl.textContent = 'Métadonnées indisponibles';
-        titleEl.textContent = 'Le flux fonctionne peut-être, mais les informations de piste ne sont pas accessibles.';
+        titleEl.textContent = 'Le flux fonctionne, mais les informations de piste ne sont pas accessibles.';
       }
     }
 
