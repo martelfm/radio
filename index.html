@@ -1,131 +1,254 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Martel FM</title>
   <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card-2: #1f2937;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #22c55e;
+      --accent-2: #16a34a;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0f1115;
-      color: #ffffff;
       font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1120 0%, #111827 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
       padding: 24px;
     }
 
-    .card {
+    .player {
       width: 100%;
-      max-width: 420px;
-      background: #1a1f27;
+      max-width: 520px;
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 18px 45px rgba(0,0,0,.35);
-      text-align: center;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
     }
 
-    .logo {
-      width: 220px;
-      height: 220px;
-      object-fit: cover;
-      border-radius: 18px;
-      display: block;
-      margin: 0 auto 18px;
-      background: #111;
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: 30px;
+      margin: 0 0 10px;
+      font-size: 32px;
+      line-height: 1.1;
     }
 
-    .subtitle {
-      color: #aeb6c2;
-      margin-bottom: 20px;
+    p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 24px;
+      color: var(--muted);
       font-size: 14px;
     }
 
-    .now-label {
-      font-size: 12px;
-      color: #8f98a6;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #64748b;
+      transition: 0.2s ease;
     }
 
-    .track {
-      min-height: 48px;
-      font-size: 18px;
-      line-height: 1.4;
-      margin-bottom: 18px;
+    .dot.playing {
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.18);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    a.button-link {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.2s ease;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+    }
+
+    .primary:hover {
+      background: var(--accent-2);
+    }
+
+    .secondary {
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .secondary:hover {
+      background: #263244;
+    }
+
+    .stream-url {
+      margin-top: 22px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      word-break: break-all;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stream-url a {
+      color: #93c5fd;
     }
 
     audio {
       width: 100%;
-      margin-top: 8px;
+      margin-top: 20px;
+      border-radius: 12px;
     }
 
-    .note {
-      margin-top: 14px;
-      font-size: 12px;
-      color: #8f98a6;
+    .error {
+      margin-top: 16px;
+      color: #fecaca;
+      font-size: 14px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <img src="logo.jpg" alt="Logo Martel FM" class="logo">
+  <main class="player">
+    <div class="badge">Radio en direct</div>
     <h1>Martel FM</h1>
-    <div class="subtitle">Radio en ligne</div>
+    <p>Écoutez le flux en direct depuis le lecteur ci-dessous.</p>
 
-    <div class="now-label">Titre en cours</div>
-    <div class="track" id="track">Chargement...</div>
+    <div class="status">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">En attente de lecture</span>
+    </div>
 
-    <audio controls preload="none">
-      <source src="https://martelfm.synology.me:52732/stream" type="audio/mpeg">
-      Votre navigateur ne supporte pas l’audio HTML5.
+    <div class="controls">
+      <button id="playBtn" class="primary">Écouter</button>
+      <a
+        class="button-link secondary"
+        href="https://martelfm.synology.me/stream"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Ouvrir le flux</a>
+    </div>
+
+    <audio id="radio" controls preload="none">
+      <source src="https://martelfm.synology.me/stream" type="audio/mpeg" />
+      Votre navigateur ne prend pas en charge la lecture audio.
     </audio>
 
-    <div class="note" id="note"></div>
-  </div>
+    <div id="errorBox" class="error"></div>
+
+    <div class="stream-url">
+      Flux : 
+      <a href="https://martelfm.synology.me/stream" target="_blank" rel="noopener noreferrer">
+        https://martelfm.synology.me/stream
+      </a>
+    </div>
+  </main>
 
   <script>
-    const statusUrl = "https://martelfm.synology.me:52732/status-json.xsl";
-    const mountName = "/stream";
-    const trackEl = document.getElementById("track");
-    const noteEl = document.getElementById("note");
+    const audio = document.getElementById('radio');
+    const playBtn = document.getElementById('playBtn');
+    const statusText = document.getElementById('statusText');
+    const statusDot = document.getElementById('statusDot');
+    const errorBox = document.getElementById('errorBox');
 
-    async function updateTrack() {
-      try {
-        const response = await fetch(statusUrl, { cache: "no-store" });
-        const data = await response.json();
-        let source = data.icestats && data.icestats.source;
-
-        if (Array.isArray(source)) {
-          source = source.find(s =>
-            (s.listenurl && s.listenurl.includes(mountName)) ||
-            (s.server_name && s.server_name.includes("Martel"))
-          ) || source[0];
-        }
-
-        let title = source && source.title ? source.title : "";
-        if (title === "-" || title.trim() === "") {
-          title = "Aucun titre disponible";
-        }
-
-        trackEl.textContent = title;
-        noteEl.textContent = "Mise à jour automatique toutes les 10 secondes";
-      } catch (error) {
-        trackEl.textContent = "Titre indisponible";
-        noteEl.textContent = "Le flux peut fonctionner même si les métadonnées ne sont pas accessibles.";
+    function setPlayingState(isPlaying) {
+      if (isPlaying) {
+        statusText.textContent = 'Lecture en cours';
+        statusDot.classList.add('playing');
+        playBtn.textContent = 'Pause';
+      } else {
+        statusText.textContent = 'En attente de lecture';
+        statusDot.classList.remove('playing');
+        playBtn.textContent = 'Écouter';
       }
     }
 
-    updateTrack();
-    setInterval(updateTrack, 10000);
+    function showError(message) {
+      errorBox.style.display = 'block';
+      errorBox.textContent = message;
+    }
+
+    function clearError() {
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+    }
+
+    playBtn.addEventListener('click', async () => {
+      clearError();
+
+      if (audio.paused) {
+        try {
+          await audio.play();
+        } catch (err) {
+          showError("La lecture automatique a été bloquée ou le flux n'a pas pu démarrer.");
+        }
+      } else {
+        audio.pause();
+      }
+    });
+
+    audio.addEventListener('playing', () => {
+      clearError();
+      setPlayingState(true);
+    });
+
+    audio.addEventListener('pause', () => {
+      setPlayingState(false);
+    });
+
+    audio.addEventListener('waiting', () => {
+      statusText.textContent = 'Connexion au flux...';
+    });
+
+    audio.addEventListener('error', () => {
+      showError("Erreur de lecture du flux. Vérifie que l'URL HTTPS du stream répond toujours.");
+      statusText.textContent = 'Erreur de lecture';
+      statusDot.classList.remove('playing');
+      playBtn.textContent = 'Écouter';
+    });
   </script>
 </body>
 </html>
