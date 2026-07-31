@@ -16,9 +16,7 @@
       --border: rgba(255,255,255,0.12);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -68,14 +66,8 @@
       line-height: 1.1;
     }
 
-    .subtitle {
-      margin: 0 0 20px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
     .now-playing-box {
-      margin: 0 0 22px;
+      margin: 18px 0 22px;
       padding: 18px;
       border-radius: 16px;
       background: rgba(255,255,255,0.04);
@@ -125,21 +117,12 @@
       box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.18);
     }
 
-    .controls {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    button,
-    a.button-link {
+    button {
       border: none;
       border-radius: 12px;
       padding: 14px 18px;
       font-size: 16px;
       cursor: pointer;
-      text-decoration: none;
       transition: 0.2s ease;
     }
 
@@ -147,42 +130,17 @@
       background: var(--accent);
       color: white;
       font-weight: 700;
+      min-width: 160px;
     }
 
     .primary:hover {
       background: var(--accent-2);
     }
 
-    .secondary {
-      background: var(--card-2);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .secondary:hover {
-      background: #263244;
-    }
-
     audio {
       width: 100%;
       margin-top: 20px;
       border-radius: 12px;
-    }
-
-    .stream-url {
-      margin-top: 22px;
-      padding: 14px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      word-break: break-all;
-      color: var(--muted);
-      font-size: 14px;
-      text-align: left;
-    }
-
-    .stream-url a {
-      color: #93c5fd;
     }
 
     .error {
@@ -194,26 +152,11 @@
     }
 
     @media (max-width: 600px) {
-      .player {
-        padding: 22px;
-      }
-
-      h1 {
-        font-size: 28px;
-      }
-
-      .artist {
-        font-size: 20px;
-      }
-
-      .title {
-        font-size: 17px;
-      }
-
-      .logo {
-        width: 96px;
-        height: 96px;
-      }
+      .player { padding: 22px; }
+      h1 { font-size: 28px; }
+      .artist { font-size: 20px; }
+      .title { font-size: 17px; }
+      .logo { width: 96px; height: 96px; }
     }
   </style>
 </head>
@@ -223,7 +166,6 @@
 
     <div class="badge">Radio en direct</div>
     <h1>Martel FM</h1>
-    <p class="subtitle">Écoutez le flux live et consultez le titre en cours de diffusion.</p>
 
     <section class="now-playing-box">
       <div class="np-label">En ce moment</div>
@@ -236,15 +178,7 @@
       <span id="statusText">En attente de lecture</span>
     </div>
 
-    <div class="controls">
-      <button id="playBtn" class="primary">Écouter</button>
-      <a
-        class="button-link secondary"
-        href="https://martelfm.synology.me/stream"
-        target="_blank"
-        rel="noopener noreferrer"
-      >Ouvrir le flux</a>
-    </div>
+    <button id="playBtn" class="primary">Écouter</button>
 
     <audio id="radio" controls preload="none">
       <source src="https://martelfm.synology.me/stream" type="audio/mpeg" />
@@ -252,18 +186,6 @@
     </audio>
 
     <div id="errorBox" class="error"></div>
-
-    <div class="stream-url">
-      Flux audio :
-      <a href="https://martelfm.synology.me/stream" target="_blank" rel="noopener noreferrer">
-        https://martelfm.synology.me/stream
-      </a>
-      <br /><br />
-      Métadonnées :
-      <a href="https://martelfm.synology.me/status-json.xsl" target="_blank" rel="noopener noreferrer">
-        https://martelfm.synology.me/status-json.xsl
-      </a>
-    </div>
   </main>
 
   <script>
@@ -306,10 +228,7 @@
 
     function parseTitle(rawTitle) {
       if (!rawTitle || typeof rawTitle !== 'string') {
-        return {
-          artist: 'Informations indisponibles',
-          title: 'Aucun titre détecté'
-        };
+        return { artist: 'Informations indisponibles', title: 'Aucun titre détecté' };
       }
 
       const separators = [' - ', ' – ', ' — '];
@@ -325,33 +244,19 @@
         }
       }
 
-      return {
-        artist: 'En diffusion',
-        title: rawTitle.trim()
-      };
+      return { artist: 'En diffusion', title: rawTitle.trim() };
     }
 
     function extractCurrentSource(data) {
       if (!data || !data.icestats || !data.icestats.source) return null;
-
       const source = data.icestats.source;
-
-      if (Array.isArray(source)) {
-        return source[0] || null;
-      }
-
-      return source;
+      return Array.isArray(source) ? (source[0] || null) : source;
     }
 
     async function fetchNowPlaying() {
       try {
-        const res = await fetch('https://martelfm.synology.me/status-json.xsl', {
-          cache: 'no-store'
-        });
-
-        if (!res.ok) {
-          throw new Error('Réponse HTTP invalide');
-        }
+        const res = await fetch('https://martelfm.synology.me/status-json.xsl', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Réponse HTTP invalide');
 
         const data = await res.json();
         const current = extractCurrentSource(data);
@@ -362,12 +267,7 @@
           return;
         }
 
-        const rawTitle =
-          current.title ||
-          current.server_name ||
-          current.listenurl ||
-          '';
-
+        const rawTitle = current.title || current.server_name || current.listenurl || '';
         const parsed = parseTitle(rawTitle);
         artistEl.textContent = parsed.artist;
         titleEl.textContent = parsed.title;
@@ -379,7 +279,6 @@
 
     playBtn.addEventListener('click', async () => {
       clearError();
-
       if (audio.paused) {
         try {
           await audio.play();
