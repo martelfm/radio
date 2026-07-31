@@ -8,7 +8,6 @@
     :root {
       --bg: #0f172a;
       --card: rgba(17, 24, 39, 0.96);
-      --card-2: #1f2937;
       --text: #f8fafc;
       --muted: #cbd5e1;
       --accent: #22c55e;
@@ -26,26 +25,26 @@
       color: var(--text);
       display: grid;
       place-items: center;
-      padding: 24px;
+      padding: 20px;
     }
 
     .player {
       width: 100%;
-      max-width: 560px;
+      max-width: 540px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 28px;
+      padding: 26px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.35);
       text-align: center;
     }
 
     .logo {
-      width: 148px;
-      height: 148px;
+      width: 180px;
+      height: 180px;
       object-fit: cover;
-      border-radius: 22px;
-      margin: 0 auto 16px;
+      border-radius: 24px;
+      margin: 0 auto 14px;
       border: 1px solid var(--border);
       background: rgba(255,255,255,0.04);
       display: block;
@@ -53,15 +52,15 @@
 
     .fallback-title {
       display: none;
-      margin: 0 0 18px;
-      font-size: 32px;
+      margin: 0 0 14px;
+      font-size: 34px;
       line-height: 1.1;
       font-weight: 700;
     }
 
     .badge {
       display: inline-block;
-      font-size: 12px;
+      font-size: 11px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
@@ -69,31 +68,33 @@
     }
 
     .now-playing-box {
-      margin: 18px 0 22px;
-      padding: 18px;
-      border-radius: 16px;
+      margin: 14px 0 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
       background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
       text-align: left;
     }
 
     .np-label {
-      font-size: 12px;
+      font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .artist {
-      font-size: 22px;
-      font-weight: 700;
       margin-bottom: 6px;
     }
 
+    .artist {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 3px;
+      line-height: 1.25;
+    }
+
     .title {
-      font-size: 18px;
+      font-size: 15px;
       color: #e2e8f0;
+      line-height: 1.35;
     }
 
     .status {
@@ -101,7 +102,7 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      margin: 18px 0 24px;
+      margin: 14px 0 18px;
       color: var(--muted);
       font-size: 14px;
     }
@@ -141,12 +142,12 @@
 
     audio {
       width: 100%;
-      margin-top: 20px;
+      margin-top: 18px;
       border-radius: 12px;
     }
 
     .error {
-      margin-top: 16px;
+      margin-top: 14px;
       color: #fecaca;
       font-size: 14px;
       display: none;
@@ -155,10 +156,10 @@
 
     @media (max-width: 600px) {
       .player { padding: 22px; }
-      .logo { width: 118px; height: 118px; }
+      .logo { width: 140px; height: 140px; }
       .fallback-title { font-size: 28px; }
-      .artist { font-size: 20px; }
-      .title { font-size: 17px; }
+      .artist { font-size: 18px; }
+      .title { font-size: 14px; }
     }
   </style>
 </head>
