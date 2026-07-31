@@ -7,13 +7,12 @@
   <style>
     :root {
       --bg: #0f172a;
-      --card: #111827;
+      --card: rgba(17, 24, 39, 0.96);
       --card-2: #1f2937;
       --text: #f8fafc;
       --muted: #cbd5e1;
       --accent: #22c55e;
       --accent-2: #16a34a;
-      --danger: #ef4444;
       --border: rgba(255,255,255,0.12);
     }
 
@@ -34,12 +33,23 @@
 
     .player {
       width: 100%;
-      max-width: 520px;
-      background: rgba(17, 24, 39, 0.96);
+      max-width: 560px;
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 28px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+      text-align: center;
+    }
+
+    .logo {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 18px;
+      margin: 0 auto 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
     }
 
     .badge {
@@ -52,20 +62,49 @@
     }
 
     h1 {
-      margin: 0 0 10px;
+      margin: 0 0 8px;
       font-size: 32px;
       line-height: 1.1;
     }
 
-    p {
+    .subtitle {
       margin: 0 0 20px;
       color: var(--muted);
       line-height: 1.5;
     }
 
+    .now-playing-box {
+      margin: 0 0 22px;
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .np-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .artist {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .title {
+      font-size: 18px;
+      color: #e2e8f0;
+    }
+
     .status {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
       margin: 18px 0 24px;
       color: var(--muted);
@@ -88,6 +127,7 @@
     .controls {
       display: flex;
       gap: 12px;
+      justify-content: center;
       flex-wrap: wrap;
     }
 
@@ -122,6 +162,12 @@
       background: #263244;
     }
 
+    audio {
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 12px;
+    }
+
     .stream-url {
       margin-top: 22px;
       padding: 14px;
@@ -131,16 +177,11 @@
       word-break: break-all;
       color: var(--muted);
       font-size: 14px;
+      text-align: left;
     }
 
     .stream-url a {
       color: #93c5fd;
-    }
-
-    audio {
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 12px;
     }
 
     .error {
@@ -148,14 +189,46 @@
       color: #fecaca;
       font-size: 14px;
       display: none;
+      text-align: left;
+    }
+
+    @media (max-width: 600px) {
+      .player {
+        padding: 22px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .artist {
+        font-size: 20px;
+      }
+
+      .title {
+        font-size: 17px;
+      }
+
+      .logo {
+        width: 96px;
+        height: 96px;
+      }
     }
   </style>
 </head>
 <body>
   <main class="player">
+    <img src="./logo.jpg" alt="Logo Martel FM" class="logo" />
+
     <div class="badge">Radio en direct</div>
     <h1>Martel FM</h1>
-    <p>Écoutez le flux en direct depuis le lecteur ci-dessous.</p>
+    <p class="subtitle">Écoutez le flux live et consultez le titre en cours de diffusion.</p>
+
+    <section class="now-playing-box">
+      <div class="np-label">En ce moment</div>
+      <div id="artist" class="artist">Chargement…</div>
+      <div id="title" class="title">Récupération des informations du flux</div>
+    </section>
 
     <div class="status">
       <span class="dot" id="statusDot"></span>
@@ -180,9 +253,14 @@
     <div id="errorBox" class="error"></div>
 
     <div class="stream-url">
-      Flux : 
+      Flux audio :
       <a href="https://martelfm.synology.me/stream" target="_blank" rel="noopener noreferrer">
         https://martelfm.synology.me/stream
+      </a>
+      <br /><br />
+      Métadonnées :
+      <a href="https://martelfm.synology.me/status-json.xsl" target="_blank" rel="noopener noreferrer">
+        https://martelfm.synology.me/status-json.xsl
       </a>
     </div>
   </main>
@@ -193,6 +271,8 @@
     const statusText = document.getElementById('statusText');
     const statusDot = document.getElementById('statusDot');
     const errorBox = document.getElementById('errorBox');
+    const artistEl = document.getElementById('artist');
+    const titleEl = document.getElementById('title');
 
     function setPlayingState(isPlaying) {
       if (isPlaying) {
@@ -216,6 +296,79 @@
       errorBox.textContent = '';
     }
 
+    function parseTitle(rawTitle) {
+      if (!rawTitle || typeof rawTitle !== 'string') {
+        return {
+          artist: 'Informations indisponibles',
+          title: 'Aucun titre détecté'
+        };
+      }
+
+      const separators = [' - ', ' – ', ' — '];
+      for (const sep of separators) {
+        if (rawTitle.includes(sep)) {
+          const parts = rawTitle.split(sep);
+          if (parts.length >= 2) {
+            return {
+              artist: parts[0].trim() || 'Artiste inconnu',
+              title: parts.slice(1).join(sep).trim() || 'Titre inconnu'
+            };
+          }
+        }
+      }
+
+      return {
+        artist: 'En diffusion',
+        title: rawTitle.trim()
+      };
+    }
+
+    function extractCurrentSource(data) {
+      if (!data || !data.icestats || !data.icestats.source) return null;
+
+      const source = data.icestats.source;
+
+      if (Array.isArray(source)) {
+        return source[0] || null;
+      }
+
+      return source;
+    }
+
+    async function fetchNowPlaying() {
+      try {
+        const res = await fetch('https://martelfm.synology.me/status-json.xsl', {
+          cache: 'no-store'
+        });
+
+        if (!res.ok) {
+          throw new Error('Réponse HTTP invalide');
+        }
+
+        const data = await res.json();
+        const current = extractCurrentSource(data);
+
+        if (!current) {
+          artistEl.textContent = 'Flux détecté';
+          titleEl.textContent = 'Aucune métadonnée disponible';
+          return;
+        }
+
+        const rawTitle =
+          current.title ||
+          current['server_name'] ||
+          current['listenurl'] ||
+          '';
+
+        const parsed = parseTitle(rawTitle);
+        artistEl.textContent = parsed.artist;
+        titleEl.textContent = parsed.title;
+      } catch (err) {
+        artistEl.textContent = 'Métadonnées indisponibles';
+        titleEl.textContent = 'Le flux fonctionne peut-être, mais les informations de piste ne sont pas accessibles.';
+      }
+    }
+
     playBtn.addEventListener('click', async () => {
       clearError();
 
@@ -223,7 +376,7 @@
         try {
           await audio.play();
         } catch (err) {
-          showError("La lecture automatique a été bloquée ou le flux n'a pas pu démarrer.");
+          showError("La lecture a été bloquée ou le flux n'a pas pu démarrer.");
         }
       } else {
         audio.pause();
@@ -249,6 +402,9 @@
       statusDot.classList.remove('playing');
       playBtn.textContent = 'Écouter';
     });
+
+    fetchNowPlaying();
+    setInterval(fetchNowPlaying, 15000);
   </script>
 </body>
 </html>
