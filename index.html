@@ -41,14 +41,22 @@
     }
 
     .logo {
-      width: 120px;
-      height: 120px;
+      width: 148px;
+      height: 148px;
       object-fit: cover;
-      border-radius: 18px;
-      margin: 0 auto 18px;
+      border-radius: 22px;
+      margin: 0 auto 16px;
       border: 1px solid var(--border);
       background: rgba(255,255,255,0.04);
       display: block;
+    }
+
+    .fallback-title {
+      display: none;
+      margin: 0 0 18px;
+      font-size: 32px;
+      line-height: 1.1;
+      font-weight: 700;
     }
 
     .badge {
@@ -58,12 +66,6 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 14px;
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
-      line-height: 1.1;
     }
 
     .now-playing-box {
@@ -153,19 +155,19 @@
 
     @media (max-width: 600px) {
       .player { padding: 22px; }
-      h1 { font-size: 28px; }
+      .logo { width: 118px; height: 118px; }
+      .fallback-title { font-size: 28px; }
       .artist { font-size: 20px; }
       .title { font-size: 17px; }
-      .logo { width: 96px; height: 96px; }
     }
   </style>
 </head>
 <body>
   <main class="player">
     <img id="logo" src="/radio/logo.jpg" alt="Logo Martel FM" class="logo" />
+    <h1 id="fallbackTitle" class="fallback-title">Martel FM</h1>
 
     <div class="badge">Radio en direct</div>
-    <h1>Martel FM</h1>
 
     <section class="now-playing-box">
       <div class="np-label">En ce moment</div>
@@ -197,10 +199,19 @@
     const artistEl = document.getElementById('artist');
     const titleEl = document.getElementById('title');
     const logoEl = document.getElementById('logo');
+    const fallbackTitle = document.getElementById('fallbackTitle');
 
+    function setTitleVisibility(visible) {
+      fallbackTitle.style.display = visible ? 'block' : 'none';
+    }
+
+    logoEl.addEventListener('load', () => setTitleVisibility(false));
     logoEl.onerror = function () {
       if (logoEl.getAttribute('src') !== './logo.jpg') {
         logoEl.setAttribute('src', './logo.jpg');
+      } else {
+        logoEl.style.display = 'none';
+        setTitleVisibility(true);
       }
     };
 
